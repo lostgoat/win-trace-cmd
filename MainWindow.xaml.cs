@@ -37,7 +37,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace win_trace_cmd
+namespace WinTraceCmd
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -47,6 +47,8 @@ namespace win_trace_cmd
         public MainWindow()
         {
             InitializeComponent();
+            Output.LogBlock = LogBlock;
+            Output.LogScrollviewer = LogScrollViewer;
         }
 
         enum TraceState
@@ -56,25 +58,48 @@ namespace win_trace_cmd
         }
 
         private TraceState mTraceState = TraceState.Stop;
+        private Config mConfig = new Config();
+
+        private void SetTraceState( TraceState state )
+        {
+            string buttonContent = "";
+            string stateMsg = "";
+
+            switch( state )
+            {
+                case TraceState.Start:
+                    buttonContent = "Start Trace";
+                    stateMsg = "( Tracing... )";
+                    break;
+                case TraceState.Stop:
+                    buttonContent = "Stop Trace";
+                    stateMsg = "";
+                    break;
+            }
+
+            TraceButton.Content = buttonContent;
+            Title = "WinTraceCmd " + stateMsg;
+            mTraceState = state;
+
+            Output.Print( buttonContent );
+        }
 
         private void OnStartTrace( object sender, RoutedEventArgs e )
         {
             Debug.Assert( mTraceState == TraceState.Stop );
-
-            TraceButton.Content = "Stop Trace";
-            mTraceState = TraceState.Start;
+            SetTraceState( TraceState.Start );
         }
 
         private void OnStopTrace( object sender, RoutedEventArgs e )
         {
             Debug.Assert( mTraceState == TraceState.Start );
 
-            TraceButton.Content = "Start Trace";
-            mTraceState = TraceState.Stop;
+            SetTraceState( TraceState.Stop );
         }
 
         private void OnEtlPathChanged( object sender, TextChangedEventArgs e )
         {
+            mConfig.EtlOutputFile = EtlPathBox.Text;
         }
 
         private void OnEtlPathButtonClick( object sender, RoutedEventArgs e )
@@ -84,6 +109,7 @@ namespace win_trace_cmd
 
         private void OnWdatPathChanged( object sender, TextChangedEventArgs e )
         {
+            mConfig.WdatOutputFile = WdatPathBox.Text;
         }
 
         private void OnWdatPathButtonClick( object sender, RoutedEventArgs e )

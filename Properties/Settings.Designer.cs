@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace win_trace_cmd.Properties
+namespace WinTraceCmd.Properties
 {
 
 

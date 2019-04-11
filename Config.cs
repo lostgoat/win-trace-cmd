@@ -23,18 +23,29 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace WinTraceCmd
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    class Config
     {
+        // ETW provider GUIDs in which we are interested
+        public static readonly Guid kSteamVRGuid = new Guid( "8f8f13b1-60eb-4b6a-a433-de86104115ac" );
+        public static readonly Guid kDxgKrnlGuid = new Guid( "802ec45a-1e99-4b83-9920-87c98277ba9d" );
+
+        // ETW providers as an array
+        public Guid[] EtwProviders { get; set; } =
+        {
+            kSteamVRGuid,
+            kDxgKrnlGuid
+        };
+
+        // Where to store the trace etl file
+        public string EtlOutputFile { get; set; } = "%temp%/wintracecmd.etl";
+
+        // Where to store wdat output file
+        public string WdatOutputFile { get; set;  } = "%temp%/wintracecmd.wdat";
     }
 }

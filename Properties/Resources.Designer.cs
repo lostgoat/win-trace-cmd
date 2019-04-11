@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace win_trace_cmd.Properties
+namespace WinTraceCmd.Properties
 {
 
 
@@ -44,7 +44,7 @@ namespace win_trace_cmd.Properties
             {
                 if( ( resourceMan == null ) )
                 {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager( "win_trace_cmd.Properties.Resources", typeof( Resources ).Assembly );
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager( "WinTraceCmd.Properties.Resources", typeof( Resources ).Assembly );
                     resourceMan = temp;
                 }
                 return resourceMan;
