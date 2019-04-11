@@ -26,46 +26,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Diagnostics.Tracing.Session;
 
 namespace WinTraceCmd
 {
-    class Config
+    class EtlTracer
     {
-        // ETW provider GUIDs in which we are interested
-        public static readonly Guid kSteamVRGuid = new Guid( "8f8f13b1-60eb-4b6a-a433-de86104115ac" );
-        public static readonly Guid kDxgKrnlGuid = new Guid( "802ec45a-1e99-4b83-9920-87c98277ba9d" );
+        private static readonly string kSessionName = "WinTraceCmdSession";
+        private Config mConfig;
+        private TraceEventSession mEtwSession;
 
-        // The type of ETW trace provider
-        public enum TraceProviderType
+        public EtlTracer( Config config )
         {
-            user,
-            kernel,
+            mConfig = config;
         }
 
-        // An ETW trace provider definition
-        public class TraceProvider
+        public bool EnableProvider( Config.TraceProvider provider )
         {
-            public TraceProvider( Guid guid, TraceProviderType type )
+            switch( provider.Type )
             {
-                Guid = guid;
-                Type = type;
+                case Config.TraceProviderType.kernel:
+                    break;
+                case Config.TraceProviderType.user:
+                    mEtwSession.EnableProvider( provider.Guid );
+                    break;
+                default:
+                    Output.Print( "Error: Bad kernel provider type for " + provider.Guid.ToString() );
+                    break;
             }
 
-            public Guid Guid { get; set; }
-            public TraceProviderType Type { get; set; }
+            return true;
         }
 
-        // ETW providers as an array
-        public TraceProvider[] EtwProviders { get; set; } =
+        public bool StartTrace()
         {
-            new TraceProvider( kSteamVRGuid, TraceProviderType.user ),
-            new TraceProvider( kDxgKrnlGuid, TraceProviderType.user ),
-        };
+            Output.Print( "Start Trace" );
 
-        // Where to store the trace etl file
-        public string EtlOutputFile { get; set; } = Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + "\\wintracecmd.etl";
+            mEtwSession = new TraceEventSession( kSessionName, mConfig.EtlOutputFile );
 
-        // Where to store wdat output file
-        public string WdatOutputFile { get; set; } = Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + "\\wintracecmd.wdat";
+            foreach ( var provider in mConfig.EtwProviders )
+            {
+                EnableProvider( provider );
+            }
+
+            return true;
+        }
+
+        public bool StopTrace()
+        {
+            Output.Print( "Stop Trace" );
+
+            mEtwSession.Dispose();
+            mEtwSession = null;
+
+            return true;
+        }
     }
 }

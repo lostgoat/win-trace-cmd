@@ -49,6 +49,10 @@ namespace WinTraceCmd
             InitializeComponent();
             Output.LogBlock = LogBlock;
             Output.LogScrollviewer = LogScrollViewer;
+
+            mEtlTracer = new EtlTracer( mConfig );
+            EtlPathBox.Text = mConfig.EtlOutputFile;
+            WdatPathBox.Text = mConfig.WdatOutputFile;
         }
 
         enum TraceState
@@ -59,6 +63,7 @@ namespace WinTraceCmd
 
         private TraceState mTraceState = TraceState.Stop;
         private Config mConfig = new Config();
+        private EtlTracer mEtlTracer;
 
         private void SetTraceState( TraceState state )
         {
@@ -68,11 +73,11 @@ namespace WinTraceCmd
             switch( state )
             {
                 case TraceState.Start:
-                    buttonContent = "Start Trace";
+                    buttonContent = "Stop Trace";
                     stateMsg = "( Tracing... )";
                     break;
                 case TraceState.Stop:
-                    buttonContent = "Stop Trace";
+                    buttonContent = "Start Trace";
                     stateMsg = "";
                     break;
             }
@@ -80,21 +85,22 @@ namespace WinTraceCmd
             TraceButton.Content = buttonContent;
             Title = "WinTraceCmd " + stateMsg;
             mTraceState = state;
-
-            Output.Print( buttonContent );
         }
 
         private void OnStartTrace( object sender, RoutedEventArgs e )
         {
             Debug.Assert( mTraceState == TraceState.Stop );
             SetTraceState( TraceState.Start );
+
+            mEtlTracer.StartTrace();
         }
 
         private void OnStopTrace( object sender, RoutedEventArgs e )
         {
             Debug.Assert( mTraceState == TraceState.Start );
-
             SetTraceState( TraceState.Stop );
+
+            mEtlTracer.StopTrace();
         }
 
         private void OnEtlPathChanged( object sender, TextChangedEventArgs e )

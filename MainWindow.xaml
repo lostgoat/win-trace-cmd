@@ -35,11 +35,11 @@
                 <ToggleButton x:Name="TraceButton" Content="Start Trace" Checked="OnStartTrace" Unchecked="OnStopTrace" />
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBox x:Name="EtlPathBox" MinWidth="300" Text="Optionally select where to store ETL file" TextChanged="OnEtlPathChanged" />
+                    <TextBox x:Name="EtlPathBox" MinWidth="300" TextChanged="OnEtlPathChanged" />
                     <Button  x:Name="EtlPathButton" Content="Browse" Click="OnEtlPathButtonClick" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBox x:Name="WdatPathBox" MinWidth="300" Text="Optionally select where to store wdat file" TextChanged="OnWdatPathChanged" />
+                    <TextBox x:Name="WdatPathBox" MinWidth="300" TextChanged="OnWdatPathChanged" />
                     <Button  x:Name="WdatPathButton" Content="Browse" Click="OnWdatPathButtonClick" />
                 </StackPanel>
             </StackPanel>
