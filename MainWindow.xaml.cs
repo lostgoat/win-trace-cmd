@@ -51,19 +51,27 @@ namespace WinTraceCmd
             Output.LogScrollviewer = LogScrollViewer;
 
             mEtlTracer = new EtlTracer( mConfig );
+            mWdatParser = new WdatParser( mConfig );
             EtlPathBox.Text = mConfig.EtlOutputFile;
             WdatPathBox.Text = mConfig.WdatOutputFile;
+            sThisWindow = this;
         }
+
+
 
         enum TraceState
         {
             Stop,
-            Start
+            Start,
+            Processing
         }
 
         private TraceState mTraceState = TraceState.Stop;
         private Config mConfig = new Config();
         private EtlTracer mEtlTracer;
+        private WdatParser mWdatParser;
+        private Task mWdatTask = null;
+        private static MainWindow sThisWindow = null;
 
         private void SetTraceState( TraceState state )
         {
@@ -80,6 +88,10 @@ namespace WinTraceCmd
                     buttonContent = "Start Trace";
                     stateMsg = "";
                     break;
+                case TraceState.Processing:
+                    buttonContent = "Processing...";
+                    stateMsg = "( Processing... )";
+                    break;
             }
 
             TraceButton.Content = buttonContent;
@@ -92,15 +104,30 @@ namespace WinTraceCmd
             Debug.Assert( mTraceState == TraceState.Stop );
             SetTraceState( TraceState.Start );
 
+            // Wait for the previous job to finish processing
+            if( mWdatTask != null )
+            {
+                mWdatTask.Wait();
+            }
+
             mEtlTracer.StartTrace();
         }
 
         private void OnStopTrace( object sender, RoutedEventArgs e )
         {
             Debug.Assert( mTraceState == TraceState.Start );
-            SetTraceState( TraceState.Stop );
+            SetTraceState( TraceState.Processing );
 
             mEtlTracer.StopTrace();
+
+
+            mWdatTask = mWdatParser.ParseEventsAsync();
+        }
+
+        private void OnProcessingComplete()
+        {
+            Debug.Assert( mTraceState == TraceState.Processing );
+            SetTraceState( TraceState.Stop );
         }
 
         private void OnEtlPathChanged( object sender, TextChangedEventArgs e )
@@ -144,6 +171,29 @@ namespace WinTraceCmd
             pathBox.ToolTip = file;
 
             return true;
+        }
+
+        public enum AppEvents
+        {
+            ProcessingComplete,
+        }
+
+        private static void ProcessEvents( AppEvents e )
+        {
+            switch( e )
+            {
+                case AppEvents.ProcessingComplete:
+                    sThisWindow.OnProcessingComplete();
+                    break;
+            }
+        }
+
+        public static void RaiseEvent( AppEvents e )
+        {
+            Application.Current.Dispatcher.BeginInvoke( new Action( () =>
+            {
+                ProcessEvents( e );
+            } ) );
         }
     }
 }

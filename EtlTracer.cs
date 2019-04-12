@@ -43,6 +43,7 @@ namespace WinTraceCmd
 
         public bool EnableProvider( Config.TraceProvider provider )
         {
+            Output.Print( "Enabing provider " + provider.Guid );
             switch( provider.Type )
             {
                 case Config.TraceProviderType.kernel:
@@ -60,7 +61,7 @@ namespace WinTraceCmd
 
         public bool StartTrace()
         {
-            Output.Print( "Start Trace" );
+            Output.Print( "Start tracing to " + mConfig.EtlOutputFile );
 
             mEtwSession = new TraceEventSession( kSessionName, mConfig.EtlOutputFile );
 
@@ -74,10 +75,11 @@ namespace WinTraceCmd
 
         public bool StopTrace()
         {
-            Output.Print( "Stop Trace" );
-
             mEtwSession.Dispose();
+            mEtwSession.Stop();
             mEtwSession = null;
+
+            Output.Print( "Finished tracing to " + mConfig.EtlOutputFile );
 
             return true;
         }

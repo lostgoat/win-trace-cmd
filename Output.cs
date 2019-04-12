@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace WinTraceCmd
 {
@@ -14,15 +16,20 @@ namespace WinTraceCmd
         
         static public void Print( string msg )
         {
-            if( LogBlock != null )
+            Application.Current.Dispatcher.BeginInvoke( new Action( () =>
             {
-                LogBlock.Text += msg + "\n";
-
-                if ( LogScrollviewer != null )
+                if( LogBlock != null )
                 {
-                    LogScrollviewer.ScrollToBottom();
+                    LogBlock.Text += msg + "\n";
+
+                    if( LogScrollviewer != null )
+                    {
+                        LogScrollviewer.ScrollToBottom();
+                    }
                 }
-            }
+            } ));
+
+            //Dispatcher.CurrentDispatcher.Invoke( new Action( () => { } ), DispatcherPriority.ContextIdle );
         }
 
         static public void Printf( string format, params object[] args )

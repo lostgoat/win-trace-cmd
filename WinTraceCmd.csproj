@@ -87,6 +87,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="WdatParser.cs" />
     <Compile Include="EtlTracer.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="MainWindow.xaml.cs">
