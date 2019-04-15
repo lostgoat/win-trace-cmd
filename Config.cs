@@ -75,6 +75,9 @@ namespace WinTraceCmd
         // Where to store wdat output file
         public string SteamVRPath { get; set; } = "Must be set to the path of vrcompositor.exe";
 
+        // Where to find gpuvis to launch the traces
+        public string GpuvisPath { get; set; } = "Can be set to the path of gpuvis.exe to auto launch on stop";
+
         public static Config LoadConfig()
         {
             TextReader reader = null;

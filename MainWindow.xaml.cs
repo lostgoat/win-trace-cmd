@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,6 +56,7 @@ namespace WinTraceCmd
             EtlPathBox.Text = mConfig.EtlOutputFile;
             WdatPathBox.Text = mConfig.WdatOutputFile;
             SteamVrPathBox.Text = mConfig.SteamVRPath;
+            GpuvisPathBox.Text = mConfig.GpuvisPath;
             sThisWindow = this;
         }
 
@@ -133,6 +135,11 @@ namespace WinTraceCmd
         {
             Debug.Assert( mTraceState == TraceState.Processing );
             SetTraceState( TraceState.Stop );
+
+            if ( File.Exists( mConfig.GpuvisPath) )
+            {
+                Process.Start( mConfig.GpuvisPath, mConfig.WdatOutputFile );
+            }
         }
 
         private void OnEtlPathChanged( object sender, TextChangedEventArgs e )
@@ -166,6 +173,17 @@ namespace WinTraceCmd
         private void OnSteamVrPathButtonClick( object sender, RoutedEventArgs e )
         {
             ChooseOutputFile( SteamVrPathBox, "exe", false );
+        }
+
+        private void OnGpuvisPathChanged( object sender, TextChangedEventArgs e )
+        {
+            mConfig.GpuvisPath = GpuvisPathBox.Text;
+            mConfig.SaveConfig();
+        }
+
+        private void OnGpuvisPathButtonClick( object sender, RoutedEventArgs e )
+        {
+            ChooseOutputFile( GpuvisPathBox, "exe", false );
         }
 
         private bool ChooseOutputFile( TextBox pathBox, string ext, bool confirmOverwrite = true )

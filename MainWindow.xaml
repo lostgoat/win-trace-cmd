@@ -46,6 +46,10 @@
                     <TextBox x:Name="SteamVrPathBox" MinWidth="500" TextChanged="OnSteamVrPathChanged" />
                     <Button  x:Name="SteamVrPathButton" Content="Browse" Click="OnSteamVrPathButtonClick" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBox x:Name="GpuvisPathBox" MinWidth="500" TextChanged="OnGpuvisPathChanged" />
+                    <Button  x:Name="gpuvisPathButton" Content="Browse" Click="OnGpuvisPathButtonClick" />
+                </StackPanel>
             </StackPanel>
             <ScrollViewer x:Name="LogScrollViewer" Margin="0,10,0,20" HorizontalScrollBarVisibility="Auto" Height="152" Width="672" RenderTransformOrigin="0.507,0.681" Background="White">
                 <TextBlock x:Name="LogBlock" TextWrapping="Wrap" Margin="0,0,0,20"   ></TextBlock>
