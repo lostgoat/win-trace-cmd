@@ -54,6 +54,7 @@ namespace WinTraceCmd
             mWdatParser = new WdatParser( mConfig );
             EtlPathBox.Text = mConfig.EtlOutputFile;
             WdatPathBox.Text = mConfig.WdatOutputFile;
+            SteamVrPathBox.Text = mConfig.SteamVRPath;
             sThisWindow = this;
         }
 
@@ -67,7 +68,7 @@ namespace WinTraceCmd
         }
 
         private TraceState mTraceState = TraceState.Stop;
-        private Config mConfig = new Config();
+        private Config mConfig = Config.LoadConfig();
         private EtlTracer mEtlTracer;
         private WdatParser mWdatParser;
         private Task mWdatTask = null;
@@ -102,7 +103,6 @@ namespace WinTraceCmd
         private void OnStartTrace( object sender, RoutedEventArgs e )
         {
             Debug.Assert( mTraceState == TraceState.Stop );
-            SetTraceState( TraceState.Start );
 
             // Wait for the previous job to finish processing
             if( mWdatTask != null )
@@ -110,7 +110,13 @@ namespace WinTraceCmd
                 mWdatTask.Wait();
             }
 
-            mEtlTracer.StartTrace();
+            if ( !mEtlTracer.StartTrace() )
+            {
+                Output.Print( "Error: failed to start trace" );
+                return;
+            }
+
+            SetTraceState( TraceState.Start );
         }
 
         private void OnStopTrace( object sender, RoutedEventArgs e )
@@ -119,7 +125,6 @@ namespace WinTraceCmd
             SetTraceState( TraceState.Processing );
 
             mEtlTracer.StopTrace();
-
 
             mWdatTask = mWdatParser.ParseEventsAsync();
         }
@@ -133,6 +138,7 @@ namespace WinTraceCmd
         private void OnEtlPathChanged( object sender, TextChangedEventArgs e )
         {
             mConfig.EtlOutputFile = EtlPathBox.Text;
+            mConfig.SaveConfig();
         }
 
         private void OnEtlPathButtonClick( object sender, RoutedEventArgs e )
@@ -143,6 +149,7 @@ namespace WinTraceCmd
         private void OnWdatPathChanged( object sender, TextChangedEventArgs e )
         {
             mConfig.WdatOutputFile = WdatPathBox.Text;
+            mConfig.SaveConfig();
         }
 
         private void OnWdatPathButtonClick( object sender, RoutedEventArgs e )
@@ -150,9 +157,21 @@ namespace WinTraceCmd
             ChooseOutputFile( WdatPathBox, "wdat" );
         }
 
-        private bool ChooseOutputFile( TextBox pathBox, string ext )
+        private void OnSteamVrPathChanged( object sender, TextChangedEventArgs e )
+        {
+            mConfig.SteamVRPath = SteamVrPathBox.Text;
+            mConfig.SaveConfig();
+        }
+
+        private void OnSteamVrPathButtonClick( object sender, RoutedEventArgs e )
+        {
+            ChooseOutputFile( SteamVrPathBox, "exe", false );
+        }
+
+        private bool ChooseOutputFile( TextBox pathBox, string ext, bool confirmOverwrite = true )
         {
             var saveDialog = new System.Windows.Forms.SaveFileDialog();
+            saveDialog.OverwritePrompt = confirmOverwrite;
             saveDialog.Filter = String.Format( "{0} files (*.{0})|*.{0}|All files (*.*)|*.*", ext );
             saveDialog.FilterIndex = 1;
 

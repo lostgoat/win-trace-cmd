@@ -23,6 +23,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,6 +32,9 @@ namespace WinTraceCmd
 {
     class Config
     {
+        // Where to save this config on disk
+        public static readonly string kConfigFile = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ) + "\\wintracecmd-settings.json";
+
         // ETW provider GUIDs in which we are interested
         public static readonly Guid kSteamVRGuid = new Guid( "8f8f13b1-60eb-4b6a-a433-de86104115ac" );
         public static readonly Guid kDxgKrnlGuid = new Guid( "802ec45a-1e99-4b83-9920-87c98277ba9d" );
@@ -67,5 +71,44 @@ namespace WinTraceCmd
 
         // Where to store wdat output file
         public string WdatOutputFile { get; set; } = Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + "\\wintracecmd.wdat";
+
+        // Where to store wdat output file
+        public string SteamVRPath { get; set; } = "Must be set to the path of vrcompositor.exe";
+
+        public static Config LoadConfig()
+        {
+            TextReader reader = null;
+            try
+            {
+                reader = new StreamReader( kConfigFile );
+                var jsonStr = reader.ReadToEnd();
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<Config>( jsonStr );
+            }
+            catch
+            {
+                return new Config();
+            }
+            finally
+            {
+                if( reader != null )
+                    reader.Close();
+            }
+        }
+
+        public void SaveConfig()
+        {
+            TextWriter writer = null;
+            try
+            {
+                string jsonStr = Newtonsoft.Json.JsonConvert.SerializeObject( this );
+                writer = new StreamWriter( kConfigFile, false );
+                writer.Write( jsonStr );
+            }
+            finally
+            {
+                if( writer != null )
+                    writer.Close();
+            }
+        }
     }
 }
