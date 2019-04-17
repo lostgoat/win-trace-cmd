@@ -32,6 +32,9 @@ namespace WinTraceCmd
 {
     class Config
     {
+        // Bump this whenever you want a new config to override the user's system version
+        public static int kConfigVersion = 2;
+
         // Where to save this config on disk
         public static readonly string kConfigFile = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ) + "\\wintracecmd-settings.json";
 
@@ -66,6 +69,9 @@ namespace WinTraceCmd
             new TraceProvider( kDxgKrnlGuid, TraceProviderType.user ),
         };
 
+        // Config version for on-disk override
+        public int ConfigVersion { get; set; } = kConfigVersion;
+
         // Where to store the trace etl file
         public string EtlOutputFile { get; set; } = Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + "\\wintracecmd.etl";
 
@@ -85,17 +91,23 @@ namespace WinTraceCmd
             {
                 reader = new StreamReader( kConfigFile );
                 var jsonStr = reader.ReadToEnd();
-                return Newtonsoft.Json.JsonConvert.DeserializeObject<Config>( jsonStr );
+                Config config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>( jsonStr );
+
+                // Only use the on-disk config if we have a matching version
+                if( config.ConfigVersion == kConfigVersion )
+                    return config;
             }
             catch
             {
-                return new Config();
+                // If we fail, just fall back to a default config
             }
             finally
             {
                 if( reader != null )
                     reader.Close();
             }
+
+            return new Config();
         }
 
         public void SaveConfig()
