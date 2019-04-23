@@ -35,39 +35,63 @@ namespace WinTraceCmd
         // Bump this whenever you want a new config to override the user's system version
         public static int kConfigVersion = 2;
 
+        // Set to force the ETW providers to default when loading the config from disk
+        public static bool kForceDefaultProvider = false;
+
         // Where to save this config on disk
         public static readonly string kConfigFile = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ) + "\\wintracecmd-settings.json";
 
         // ETW provider GUIDs in which we are interested
         public static readonly Guid kSteamVRGuid = new Guid( "8f8f13b1-60eb-4b6a-a433-de86104115ac" );
-        public static readonly Guid kDxgKrnlGuid = new Guid( "802ec45a-1e99-4b83-9920-87c98277ba9d" );
+        public static readonly Guid kDxcGuid = new Guid( "802ec45a-1e99-4b83-9920-87c98277ba9d" );
+        public static readonly Guid kInvalidGuid = new Guid( "00000000-0000-0000-0000-000000000000" );
+
+        // ETW provider names
+        public static readonly String kDxId = "DX";
 
         // The type of ETW trace provider
         public enum TraceProviderType
         {
-            user,
+            unset,
+            userguid,
+            userid,
             kernel,
         }
 
         // An ETW trace provider definition
         public class TraceProvider
         {
-            public TraceProvider( Guid guid, TraceProviderType type )
+            // For Json deserialization
+            public TraceProvider()
             {
-                Guid = guid;
-                Type = type;
             }
 
-            public Guid Guid { get; set; }
-            public TraceProviderType Type { get; set; }
+            public TraceProvider( Guid guid )
+            {
+                Guid = guid;
+                Type = TraceProviderType.userguid;
+            }
+
+            public TraceProvider( String id )
+            {
+                UserId = id;
+                Type = TraceProviderType.userid;
+            }
+
+            public Guid Guid { get; set; } = kInvalidGuid;
+            public String UserId { get; set; } = "";
+            public TraceProviderType Type { get; set; } = TraceProviderType.unset;
         }
 
-        // ETW providers as an array
-        public TraceProvider[] EtwProviders { get; set; } =
+        public static readonly TraceProvider[] kDefaultEtwProviders =
         {
-            new TraceProvider( kSteamVRGuid, TraceProviderType.user ),
-            new TraceProvider( kDxgKrnlGuid, TraceProviderType.user ),
+            new TraceProvider( kSteamVRGuid ),
+            new TraceProvider( kDxcGuid ),
+            new TraceProvider( kDxId ),
         };
+
+        // ETW providers as an array
+        public TraceProvider[] EtwProviders { get; set; } = kDefaultEtwProviders;
 
         // Config version for on-disk override
         public int ConfigVersion { get; set; } = kConfigVersion;
@@ -95,7 +119,16 @@ namespace WinTraceCmd
 
                 // Only use the on-disk config if we have a matching version
                 if( config.ConfigVersion == kConfigVersion )
+                {
+                    if( kForceDefaultProvider )
+                        config.EtwProviders = kDefaultEtwProviders;
                     return config;
+                }
+            }
+            catch( Newtonsoft.Json.JsonException e )
+            {
+                // A nice place to break in case json parsing is broken
+                Output.Print( e.ToString() );
             }
             catch
             {

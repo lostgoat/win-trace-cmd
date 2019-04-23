@@ -112,13 +112,19 @@ namespace WinTraceCmd
 
         public bool EnableProvider( Config.TraceProvider provider )
         {
-            Output.Print( "Enabing provider " + provider.Guid );
+            
             switch( provider.Type )
             {
                 case Config.TraceProviderType.kernel:
+                    Output.Print( "Skipping kernel provider: feature unimplemented" );
                     break;
-                case Config.TraceProviderType.user:
+                case Config.TraceProviderType.userguid:
+                    Output.Print( "Enabling user provider: " + provider.Guid );
                     mEtwSession.EnableProvider( provider.Guid );
+                    break;
+                case Config.TraceProviderType.userid:
+                    Output.Print( "Enabling user provider: " + provider.UserId );
+                    mEtwSession.EnableProvider( provider.UserId );
                     break;
                 default:
                     Output.Print( "Error: Bad kernel provider type for " + provider.Guid.ToString() );

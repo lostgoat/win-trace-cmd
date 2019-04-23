@@ -73,7 +73,7 @@ namespace WinTraceCmd
                 case Guid guid when( guid == Config.kSteamVRGuid ):
                     wdatEntry = new SteamVRWdatEntry( data );
                     break;
-                case Guid guid when( guid == Config.kDxgKrnlGuid && data.EventName == "VSyncInterrupt" ):
+                case Guid guid when( guid == Config.kDxcGuid && data.EventName == "VSyncInterrupt" ):
                     wdatEntry = new VsyncWdatEntry( data );
                     break;
                 default:
