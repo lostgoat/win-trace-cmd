@@ -68,19 +68,40 @@ namespace WinTraceCmd
         {
             BaseWdatEntry wdatEntry = null;
 
+            // In explore mode we just dump a single provider to the wdat in full
+            // This is useful to begin understanding the output from a specific provider
+            if( Config.kEnableTestExploreMode )
+            {
+                if( data.ProviderGuid != Config.kTestGuid )
+                    return;
+
+                mWdatFile.WriteLine( new InspectionWdatEntry( data ) );
+                return;
+            }
+
             switch( data.ProviderGuid )
             {
                 case Guid guid when( guid == Config.kSteamVRGuid ):
                     wdatEntry = new SteamVRWdatEntry( data );
                     break;
-                case Guid guid when( guid == Config.kDxcGuid && data.EventName == "VSyncInterrupt" ):
-                    wdatEntry = new VsyncWdatEntry( data );
+                case Guid guid when( guid == Config.kDxcGuid ):
+                    switch( data.EventName )
+                    {
+                        case "VSyncInterrupt":
+                            wdatEntry = new VsyncWdatEntry( data );
+                            break;
+                    }
                     break;
-                default:
-                    if( !kDumpAllEntries )
-                        return;
-                    wdatEntry = new InspectionWdatEntry( data );
-                    break;
+            }
+
+            if ( wdatEntry == null )
+            {
+                // We aren't interested in this event
+                if( !kDumpAllEntries )
+                    return;
+
+                // A simple handler for unknown events
+                wdatEntry = new InspectionWdatEntry( data );
             }
 
             mWdatFile.WriteLine( wdatEntry.ToString() );
@@ -141,15 +162,22 @@ namespace WinTraceCmd
         }
 
         // An entry to dump all the data
-        class InspectionWdatEntry : BaseWdatEntry
+        class InspectionWdatEntry : EventWdatEntry
         {
             public override WdatEntryId EntryId { get; } = WdatEntryId.Inspection;
 
-            public InspectionWdatEntry( TraceEvent data )
+            public InspectionWdatEntry( TraceEvent data ) : base( data )
             {
-                AddField( "provider", data.ProviderGuid.ToString() );
+                AddField( "guid", data.ProviderGuid.ToString() );
                 AddField( "opcode", data.Opcode.ToString() );
-                AddField( "data", data.ToString() );
+
+                string msg = "";
+                foreach ( string name in data.PayloadNames )
+                {
+                    msg += String.Format( "{0}='{1}' ", name, data.PayloadStringByName( name ) );
+                }
+
+                AddField( "data", msg );
             }
         }
 
@@ -190,6 +218,8 @@ namespace WinTraceCmd
                 AddField( "pid", data.ProcessID.ToString() );
                 AddField( "tid", data.ThreadID.ToString() );
                 AddField( "pname", data.ProcessName );
+                AddField( "ename", data.EventName );
+                AddField( "provider", data.ProviderName );
             }
         }
 

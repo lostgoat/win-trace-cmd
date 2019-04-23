@@ -38,6 +38,9 @@ namespace WinTraceCmd
         // Set to force the ETW providers to default when loading the config from disk
         public static bool kForceDefaultProvider = false;
 
+        // Set to enable explore mode for kTextGuid
+        public static bool kEnableTestExploreMode = false;
+
         // Where to save this config on disk
         public static readonly string kConfigFile = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ) + "\\wintracecmd-settings.json";
 
@@ -45,6 +48,7 @@ namespace WinTraceCmd
         public static readonly Guid kSteamVRGuid = new Guid( "8f8f13b1-60eb-4b6a-a433-de86104115ac" );
         public static readonly Guid kDxcGuid = new Guid( "802ec45a-1e99-4b83-9920-87c98277ba9d" );
         public static readonly Guid kInvalidGuid = new Guid( "00000000-0000-0000-0000-000000000000" );
+        public static readonly Guid kTestGuid = kDxcGuid;
 
         // ETW provider names
         public static readonly String kDxId = "DX";
