@@ -97,6 +97,9 @@ namespace WinTraceCmd
         // ETW providers as an array
         public TraceProvider[] EtwProviders { get; set; } = kDefaultEtwProviders;
 
+        // Enable wdat post-processing. This is a dead format, but might have its uses.
+        public bool EnableWdat = false;
+
         // Config version for on-disk override
         public int ConfigVersion { get; set; } = kConfigVersion;
 

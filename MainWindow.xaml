@@ -31,16 +31,12 @@
         Title="WinTraceCmd" Height="450" Width="800" Background="DimGray">
     <Grid>
         <StackPanel HorizontalAlignment="Center">
-            <StackPanel HorizontalAlignment="Center">
+            <StackPanel HorizontalAlignment="Center" Height="260">
                 <ToggleButton x:Name="TraceButton" Content="Start Trace" Checked="OnStartTrace" Unchecked="OnStopTrace" />
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <TextBox x:Name="EtlPathBox" MinWidth="500" TextChanged="OnEtlPathChanged" />
                     <Button  x:Name="EtlPathButton" Content="Browse" Click="OnEtlPathButtonClick" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBox x:Name="WdatPathBox" MinWidth="500" TextChanged="OnWdatPathChanged" />
-                    <Button  x:Name="WdatPathButton" Content="Browse" Click="OnWdatPathButtonClick" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <TextBox x:Name="SteamVrPathBox" MinWidth="500" TextChanged="OnSteamVrPathChanged" />
@@ -51,8 +47,8 @@
                     <Button  x:Name="gpuvisPathButton" Content="Browse" Click="OnGpuvisPathButtonClick" />
                 </StackPanel>
             </StackPanel>
-            <ScrollViewer x:Name="LogScrollViewer" Margin="0,10,0,20" HorizontalScrollBarVisibility="Auto" Height="152" Width="672" RenderTransformOrigin="0.507,0.681" Background="White">
-                <TextBlock x:Name="LogBlock" TextWrapping="Wrap" Margin="0,0,0,20"   ></TextBlock>
+            <ScrollViewer x:Name="LogScrollViewer" Margin="0,10,0,20" HorizontalScrollBarVisibility="Auto" Height="142" Width="672" RenderTransformOrigin="0.507,0.681" Background="White">
+                <TextBlock x:Name="LogBlock" TextWrapping="Wrap"   />
             </ScrollViewer>
         </StackPanel>
     </Grid>

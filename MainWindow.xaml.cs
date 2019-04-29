@@ -54,7 +54,6 @@ namespace WinTraceCmd
             mEtlTracer = new EtlTracer( mConfig );
             mWdatParser = new WdatParser( mConfig );
             EtlPathBox.Text = mConfig.EtlOutputFile;
-            WdatPathBox.Text = mConfig.WdatOutputFile;
             SteamVrPathBox.Text = mConfig.SteamVRPath;
             GpuvisPathBox.Text = mConfig.GpuvisPath;
             sThisWindow = this;
@@ -151,17 +150,6 @@ namespace WinTraceCmd
         private void OnEtlPathButtonClick( object sender, RoutedEventArgs e )
         {
             ChooseOutputFile( EtlPathBox, "etl" );
-        }
-
-        private void OnWdatPathChanged( object sender, TextChangedEventArgs e )
-        {
-            mConfig.WdatOutputFile = WdatPathBox.Text;
-            mConfig.SaveConfig();
-        }
-
-        private void OnWdatPathButtonClick( object sender, RoutedEventArgs e )
-        {
-            ChooseOutputFile( WdatPathBox, "wdat" );
         }
 
         private void OnSteamVrPathChanged( object sender, TextChangedEventArgs e )

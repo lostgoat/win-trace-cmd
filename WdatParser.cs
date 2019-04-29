@@ -30,6 +30,11 @@ namespace WinTraceCmd
 
         public void ParseEvents()
         {
+            if ( !mConfig.EnableWdat )
+            {
+                return;
+            }
+
             Output.Print( "Processing events into: " + mConfig.WdatOutputFile );
             mWdatFile = new StreamWriter( mConfig.WdatOutputFile );
 
@@ -85,10 +90,13 @@ namespace WinTraceCmd
                     wdatEntry = new SteamVRWdatEntry( data );
                     break;
                 case Guid guid when( guid == Config.kDxcGuid ):
-                    switch( data.EventName )
+                    switch( (int) data.Task )
                     {
-                        case "VSyncInterrupt":
+                        case VsyncWdatEntry.kTaskId:
                             wdatEntry = new VsyncWdatEntry( data );
+                            break;
+                        case QueuePacketWdatEntry.kTaskId:
+                            wdatEntry = new InspectionWdatEntry( data );
                             break;
                     }
                     break;
@@ -119,6 +127,7 @@ namespace WinTraceCmd
             ETWContext = 1,
             SteamVR = 2,
             Vsync = 3,
+            QueuePacket = 4,
             Inspection = 9999,
         }
 
@@ -131,7 +140,7 @@ namespace WinTraceCmd
 
             public BaseWdatEntry()
             {
-                AddField( "id", ( (int)EntryId ).ToString() );
+                AddField( "id", EntryId.ToString( "d" ) );
             }
 
             public override string ToString()
@@ -159,6 +168,16 @@ namespace WinTraceCmd
 
                 return parsed.ToString();
             }
+
+            public string GetAllPayloads( TraceEvent data )
+            {
+                string msg = "";
+                foreach( string name in data.PayloadNames )
+                {
+                    msg += String.Format( "{0}[{1}]='{2}' ", name, data.PayloadIndex( name ), data.PayloadStringByName( name ) );
+                }
+                return msg;
+            }
         }
 
         // An entry to dump all the data
@@ -170,14 +189,7 @@ namespace WinTraceCmd
             {
                 AddField( "guid", data.ProviderGuid.ToString() );
                 AddField( "opcode", data.Opcode.ToString() );
-
-                string msg = "";
-                foreach ( string name in data.PayloadNames )
-                {
-                    msg += String.Format( "{0}='{1}' ", name, data.PayloadStringByName( name ) );
-                }
-
-                AddField( "data", msg );
+                AddField( "data", GetAllPayloads(data) );
             }
         }
 
@@ -234,9 +246,23 @@ namespace WinTraceCmd
             }
         }
 
-        // A VSync event
-        class VsyncWdatEntry : EventWdatEntry
+        // Stores some metadata for DxgKrnlEvent
+        abstract class DxgKrnlEvent : EventWdatEntry
         {
+            public const int kInfoOpcode = 0;
+            public const int kStartOpcode = 1;
+            public const int kStopOpcode = 2;
+
+            public DxgKrnlEvent( TraceEvent data ) : base(data)
+            {
+            }
+        }
+
+        // A VSync event
+        class VsyncWdatEntry : DxgKrnlEvent
+        {
+            public const int kTaskId = 10;
+
             public override WdatEntryId EntryId { get; } = WdatEntryId.Vsync;
 
             public VsyncWdatEntry( TraceEvent data ) : base( data )
@@ -244,6 +270,48 @@ namespace WinTraceCmd
                 AddField( "adapter", NormalizeBase( data.PayloadString( 0 ) ) );
                 AddField( "display", NormalizeBase( data.PayloadString( 1 ) ) );
                 AddField( "address", NormalizeBase( data.PayloadString( 2 ) ) );
+            }
+        }
+
+        // A QueuePacket event
+        class QueuePacketWdatEntry : DxgKrnlEvent
+        {
+            public const int kTaskId = 9;
+
+            public override WdatEntryId EntryId { get; } = WdatEntryId.QueuePacket;
+
+            public QueuePacketWdatEntry( TraceEvent data ) : base( data )
+            {
+                AddField( "opcode", data.Opcode.ToString( "d" ) );
+                AddField( "ctx", NormalizeBase( data.PayloadString( 0 ) ) );
+                AddField( "ptype", data.PayloadString( 1 ) );
+                AddField( "seq", NormalizeBase( data.PayloadString( 2 ) ) );
+
+                switch( data.Opcode )
+                {
+                    case Microsoft.Diagnostics.Tracing.TraceEventOpcode.Start:
+                        int type = (int)data.PayloadValue( 1 );
+                        // not all events have these fields ?
+                        if( type == 100 )
+                        {
+                            AddField( "dmabufsize", NormalizeBase( data.PayloadString( 3 ) ) );
+                            AddField( "alloclistsize", NormalizeBase( data.PayloadString( 4 ) ) );
+                            AddField( "patchloclistsize", NormalizeBase( data.PayloadString( 5 ) ) );
+                            AddField( "present", data.PayloadString( 6 ) );
+                            AddField( "dmabuf", NormalizeBase( data.PayloadString( 7 ) ) );
+                            AddField( "packet", NormalizeBase( data.PayloadString( 8 ) ) );
+                            AddField( "afence", NormalizeBase( data.PayloadString( 9 ) ) );
+                        }
+                        break;
+                    case Microsoft.Diagnostics.Tracing.TraceEventOpcode.Info:
+                        // No extra fields
+                        break;
+                    case Microsoft.Diagnostics.Tracing.TraceEventOpcode.Stop:
+                        AddField( "preempted", data.PayloadString( 3 ) );
+                        AddField( "timedout", data.PayloadString( 4 ) );
+                        AddField( "packet", NormalizeBase( data.PayloadString( 5 ) ) );
+                        break;
+                }
             }
         }
     }
