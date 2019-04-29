@@ -32,6 +32,7 @@ namespace WinTraceCmd
         {
             if ( !mConfig.EnableWdat )
             {
+                MainWindow.RaiseEvent( MainWindow.AppEvents.ProcessingComplete );
                 return;
             }
 
